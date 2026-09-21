@@ -1409,9 +1409,15 @@ class JarvisLive:
                 print("[JARVIS] 🎤 Mic stream open")
                 while True:
                     await asyncio.sleep(0.1)
-        except Exception as e:
-            print(f"[JARVIS] ❌ Mic: {e}")
+        except asyncio.CancelledError:
             raise
+        except Exception as e:
+            # No microphone: stay alive in text-only mode instead of taking the
+            # whole session (and the spoken replies) down with it.
+            print(f"[JARVIS] ⚠️  No usable microphone ({e}) — text-only input")
+            self.ui.write_log("SYS: No microphone found — type your messages instead.")
+            while True:
+                await asyncio.sleep(3600)
 
     async def _flush_pending_vision(self) -> bool:
         """Send a captured frame immediately after its tool response.

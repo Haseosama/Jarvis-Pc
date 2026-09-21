@@ -1843,8 +1843,25 @@ class PluginManagerOverlay(QWidget):
             empty.setStyleSheet(f"color: {C.TEXT_DIM}; background: transparent;")
             lay.addWidget(empty)
 
+        # Rows live in a scroll area so a long plugin list can never push the
+        # CLOSE button off-screen.
+        body = QWidget()
+        body.setStyleSheet("background: transparent;")
+        body_lay = QVBoxLayout(body)
+        body_lay.setContentsMargins(0, 0, 6, 0)
+        body_lay.setSpacing(6)
         for p in plugins:
-            lay.addLayout(self._build_row(p))
+            body_lay.addLayout(self._build_row(p))
+        body_lay.addStretch(1)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setStyleSheet("QScrollArea { background: transparent; }")
+        scroll.setWidget(body)
+        scroll.setFixedHeight(min(body.sizeHint().height() + 4, 420))
+        lay.addWidget(scroll)
 
         lay.addSpacing(4)
         close_btn = QPushButton("CLOSE")
